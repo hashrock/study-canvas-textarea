@@ -24,7 +24,7 @@ function fix() {
 
 let shift = false;
 
-function onKeyDown(e) {
+function onKeyDown(e: KeyboardEvent) {
   input.focus();
   offset += 1;
   switch (e.keyCode) {
@@ -78,7 +78,13 @@ ctx.textAlign = "left";
 ctx.textBaseline = "top";
 ctx.fillStyle = "rgba(0,0,0,1.0)";
 var text_width = 100;
-let cursor = { c: 0, r: 0, sc: 0, sr: 0 };
+interface Cursor {
+  c: number;
+  r: number;
+  sc: number;
+  sr: number;
+}
+let cursor: Cursor = { c: 0, r: 0, sc: 0, sr: 0 };
 
 var fontsize = 13;
 var lineHeight = 13 * 1.5;
@@ -106,19 +112,19 @@ redraw();
 
 document.body.addEventListener("keydown", onKeyDown);
 
-function insert(text, cursor) {
+function insert(text: string, cursor: Cursor) {
   const t = lines[cursor.r];
   lines[cursor.r] = t.slice(0, cursor.c) + text + t.slice(cursor.c);
   cursor.c += text.length;
 }
-function insertBr(cursor) {
+function insertBr(cursor: Cursor) {
   const t = lines[cursor.r];
   lines[cursor.r] = t.slice(0, cursor.c);
   lines.splice(cursor.r + 1, 0, t.slice(cursor.c));
   cursor.r += 1;
   cursor.c = 0;
 }
-function joinLine(cursor) {
+function joinLine(cursor: Cursor) {
   const t = lines[cursor.r];
   cursor.c = lines[cursor.r - 1].length;
   lines[cursor.r - 1] = lines[cursor.r - 1] + lines[cursor.r];
