@@ -1,29 +1,31 @@
 const canvas = document.querySelector("#canv");
-const input = document.querySelector("#cursor");
-const ctx = canvas.getContext("2d");
+const input: HTMLTextAreaElement = document.querySelector("#cursor");
+const ctx = (canvas as HTMLCanvasElement).getContext("2d");
 
-function hoge() {
+function fix() {
   if (cursor.c < 0) {
     cursor.r -= 1;
     cursor.c = lines[cursor.r].length;
-  }
-  if (cursor.r > lines.length) {
-    cursor.r = lines.length - 1;
-  }
-
-  if (cursor.r < 0) {
-    cursor.r = 0;
   }
 
   if (cursor.c > lines[cursor.r].length) {
     cursor.r += 1;
     cursor.c = 0;
   }
+
+  //行補正
+  if (cursor.r > lines.length) {
+    cursor.r = lines.length - 1;
+  }
+  if (cursor.r < 0) {
+    cursor.r = 0;
+  }
 }
 
 let shift = false;
 
 function onKeyDown(e) {
+  input.focus();
   offset += 1;
   switch (e.keyCode) {
     case 8: // Backspace
@@ -67,7 +69,7 @@ function onKeyDown(e) {
   console.log(e.shiftKey);
   console.log(cursor);
 
-  hoge();
+  fix();
   redraw();
 }
 
@@ -125,24 +127,27 @@ function joinLine(cursor) {
 }
 
 input.addEventListener("compositionstart", e => {
-  e.target.style.opacity = "1";
+  const el: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
+  el.style.opacity = "1";
 });
 input.addEventListener("compositionend", e => {
-  e.target.style.opacity = "0";
-  insert(e.target.value, cursor);
-  e.target.value = "";
+  const el: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
+  el.style.opacity = "0";
+  insert(el.value, cursor);
+  el.value = "";
   redraw();
 });
-input.addEventListener("input", e => {
+input.addEventListener("input", (e: InputEvent) => {
+  const el: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
   if (!e.isComposing) {
-    e.target.style.opacity = "0";
-    if (e.target.value === "\n") {
+    el.style.opacity = "0";
+    if (el.value === "\n") {
       insertBr(cursor);
     } else {
-      insert(e.target.value, cursor);
+      insert(el.value, cursor);
     }
 
-    e.target.value = "";
+    el.value = "";
     redraw();
   }
 });

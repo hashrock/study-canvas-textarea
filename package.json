@@ -1,0 +1,13 @@
+{
+  "name": "study-my-editor",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "hashrock <hashedrock@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^2.9.2"
+  },
+  "dependencies": {
+    "@types/dom-inputevent": "^1.0.1"
+  }
+}
