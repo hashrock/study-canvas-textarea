@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "target": "es2017"
   }
 }
