@@ -21,7 +21,10 @@ function hoge() {
   }
 }
 
+let shift = false;
+
 function onKeyDown(e) {
+  offset += 1;
   switch (e.keyCode) {
     case 8: // Backspace
       if (cursor.c === 0) {
@@ -38,6 +41,9 @@ function onKeyDown(e) {
       break;
     case 13: // Enter
       break;
+    // case 16:
+    //   shifted = true
+    //   break;
     case 37: // Left arrow
       cursor.c -= 1;
       break;
@@ -52,6 +58,15 @@ function onKeyDown(e) {
       break;
     default:
   }
+
+  if (!e.shiftKey) {
+    //shift
+    cursor.sc = cursor.c;
+    cursor.sr = cursor.r;
+  }
+  console.log(e.shiftKey);
+  console.log(cursor);
+
   hoge();
   redraw();
 }
@@ -61,7 +76,7 @@ ctx.textAlign = "left";
 ctx.textBaseline = "top";
 ctx.fillStyle = "rgba(0,0,0,1.0)";
 var text_width = 100;
-let cursor = { c: 0, r: 0 };
+let cursor = { c: 0, r: 0, sc: 0, sr: 0 };
 
 var fontsize = 13;
 var lineHeight = 13 * 1.5;
@@ -132,6 +147,10 @@ input.addEventListener("input", e => {
   }
 });
 
+function between() {}
+
+var offset = 0;
+
 function redraw() {
   ctx.clearRect(0, 0, 400, 300);
 
@@ -140,9 +159,28 @@ function redraw() {
   const measure = ctx.measureText(m);
 
   lines.forEach((item, i) => {
-    ctx.fillStyle = `hsl(${i}, 100%, 90%)`;
-    const m2 = ctx.measureText(item);
-    ctx.fillRect(0, lineHeight * i, m2.width, lineHeight);
+    ctx.fillStyle = `hsl(${(i + offset) * 10}, 100%, 80%)`;
+
+    //selection
+    if (cursor.sr === i && cursor.r === i) {
+      const s = ctx.measureText(item.slice(0, cursor.sc));
+      const m = ctx.measureText(item.slice(cursor.sc, cursor.c));
+      ctx.fillRect(s.width, lineHeight * i, m.width, lineHeight);
+    } else if (cursor.sr === i) {
+      const s = ctx.measureText(item.slice(0, cursor.sc));
+      const m = ctx.measureText(item.slice(cursor.sc, 0));
+      ctx.fillRect(s.width, lineHeight * i, m.width, lineHeight);
+    } else if (cursor.r === i) {
+      const s = ctx.measureText(item.slice(0, cursor.c));
+      // const m = ctx.measureText(item.slice(cursor.sc, 0));
+      ctx.fillRect(0, lineHeight * i, s.width, lineHeight);
+    }
+
+    if (cursor.r > i && cursor.sr < i) {
+      const m2 = ctx.measureText(item);
+      ctx.fillRect(0, lineHeight * i, m2.width, lineHeight);
+    }
+
     ctx.fillStyle = "black";
     ctx.fillText(item, 0, i * lineHeight + (lineHeight - fontsize) / 2);
   });
