@@ -65,7 +65,25 @@ let cursor = { c: 0, r: 0 };
 
 var fontsize = 13;
 var lineHeight = 13 * 1.5;
-const lines = ["ABCDEF", "表示テスト", "表示テスト"];
+
+const example = `自作エディタコンポーネント
+てすてす
+
+ABCDEFABCDEFABCDEFABCDEFABCDEF
+表示テスト表示テスト表示テスト表示テスト表示テスト
+
+# 見出し
+
+- リスト
+- リスト
+- リスト
+- リスト
+- リスト
+
+whoooooaaaaaaaaa
+`;
+
+const lines = example.split("\n");
 
 redraw();
 
