@@ -1,4 +1,5 @@
 const canvas: HTMLCanvasElement = document.querySelector("#canv");
-import { init } from "./editor";
+import { Editor } from "./editor";
 
-init(canvas);
+new Editor(canvas);
+// init(canvas);

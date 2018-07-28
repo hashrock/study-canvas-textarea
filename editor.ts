@@ -2,159 +2,170 @@ import { example } from "./example";
 import { Cursor } from "./cursor";
 import { redraw, setupTextDrawStyle } from "./draw";
 
-let ctx: CanvasRenderingContext2D;
-let cursor: Cursor;
-const input: HTMLTextAreaElement = document.querySelector("#cursor");
-let offset = 0;
-const lines = example.split("\n");
+export class Editor {
+  ctx: CanvasRenderingContext2D;
+  cursor: Cursor;
+  input: HTMLTextAreaElement;
+  offset = 0;
+  lines = example.split("\n");
 
-export function init(canvas: HTMLCanvasElement) {
-  ctx = (canvas as HTMLCanvasElement).getContext("2d");
-  setupTextDrawStyle(ctx);
-  cursor = new Cursor();
-  document.body.addEventListener("keydown", onKeyDown);
-  redraw(ctx, lines, cursor, offset, input);
-}
+  constructor(canvas: HTMLCanvasElement) {
+    const textarea = document.createElement("textarea");
+    textarea.setAttribute("id", "cursor");
+    textarea.setAttribute("autofocus", "autofocus");
+    canvas.parentElement.appendChild(textarea);
+    this.input = textarea;
 
-function moveFileStart() {
-  cursor.r = 0;
-  cursor.c = 0;
-}
+    this.ctx = (canvas as HTMLCanvasElement).getContext("2d");
+    setupTextDrawStyle(this.ctx);
+    this.cursor = new Cursor();
+    document.body.addEventListener("keydown", e => {
+      this.onKeyDown(e);
+    });
+    redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
 
-function moveFileEnd() {
-  cursor.r = lines.length - 1;
-  cursor.c = lines[lines.length - 1].length;
-}
+    this.input.addEventListener("compositionstart", e => {
+      const el: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
+      el.style.opacity = "1";
+    });
+    this.input.addEventListener("compositionend", e => {
+      const el: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
+      el.style.opacity = "0";
+      this.insert(el.value, this.cursor);
+      el.value = "";
+      redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
+    });
+    this.input.addEventListener("input", (e: InputEvent) => {
+      const el: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
+      if (!e.isComposing) {
+        el.style.opacity = "0";
+        if (el.value === "\n") {
+          this.insertBr(this.cursor);
+        } else {
+          this.insert(el.value, this.cursor);
+        }
 
-function moveNextLineStart() {
-  cursor.r += 1;
-  cursor.c = 0;
-}
-
-function movePrevLineEnd() {
-  cursor.r -= 1;
-  cursor.c = lines[cursor.r].length;
-}
-
-function onKeyDown(e: KeyboardEvent) {
-  input.focus();
-  offset += 1;
-  switch (e.keyCode) {
-    case 8: // Backspace
-      backSpace();
-
-      break;
-    case 46: // Delete
-      break;
-    case 13: // Enter
-      break;
-    case 37: // Left arrow
-      moveLeft();
-
-      break;
-    case 38: // Up arrow
-      moveUp();
-      break;
-    case 39: // Right arrow
-      moveRight();
-      break;
-    case 40: // Down arrow
-      moveDown();
-      break;
-    default:
+        el.value = "";
+        redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
+      }
+    });
   }
 
-  if (!e.shiftKey) {
-    cursor.cancelSelection();
+  moveFileStart() {
+    this.cursor.r = 0;
+    this.cursor.c = 0;
   }
-  redraw(ctx, lines, cursor, offset, input);
-}
 
-function backSpace() {
-  if (cursor.p.c === 0) {
-    joinLine(cursor);
-  } else {
-    removeCharBefore();
-    cursor.p.c -= 1;
+  moveFileEnd() {
+    this.cursor.r = this.lines.length - 1;
+    this.cursor.c = this.lines[this.lines.length - 1].length;
   }
-}
 
-function removeCharBefore() {
-  lines[cursor.p.r] =
-    lines[cursor.p.r].slice(0, cursor.c - 1) + lines[cursor.r].slice(cursor.c);
-}
-
-function moveDown() {
-  cursor.r += 1;
-  if (cursor.r === lines.length) {
-    moveFileEnd();
+  moveNextLineStart() {
+    this.cursor.r += 1;
+    this.cursor.c = 0;
   }
-}
 
-function moveRight() {
-  cursor.c += 1;
-  if (cursor.c > lines[cursor.r].length) {
-    moveNextLineStart();
+  movePrevLineEnd() {
+    this.cursor.r -= 1;
+    this.cursor.c = this.lines[this.cursor.r].length;
   }
-}
 
-function moveUp() {
-  cursor.r -= 1;
-  if (cursor.r < 0) {
-    moveFileStart();
-  }
-}
+  onKeyDown(e: KeyboardEvent) {
+    this.input.focus();
+    this.offset += 1;
+    switch (e.keyCode) {
+      case 8: // Backspace
+        this.backSpace();
 
-function moveLeft() {
-  cursor.c -= 1;
-  if (cursor.c < 0) {
-    movePrevLineEnd();
-  }
-}
+        break;
+      case 46: // Delete
+        break;
+      case 13: // Enter
+        break;
+      case 37: // Left arrow
+        this.moveLeft();
 
-function insert(text: string, cursor: Cursor) {
-  const t = lines[cursor.r];
-  lines[cursor.r] = t.slice(0, cursor.c) + text + t.slice(cursor.c);
-  cursor.c += text.length;
-  cursor.cancelSelection();
-}
-function insertBr(cursor: Cursor) {
-  const t = lines[cursor.r];
-  lines[cursor.r] = t.slice(0, cursor.c);
-  lines.splice(cursor.r + 1, 0, t.slice(cursor.c));
-  cursor.r += 1;
-  cursor.c = 0;
-  cursor.cancelSelection();
-}
-function joinLine(cursor: Cursor) {
-  cursor.c = lines[cursor.r - 1].length;
-  lines[cursor.r - 1] = lines[cursor.r - 1] + lines[cursor.r];
-  lines.splice(cursor.r, 1);
-  cursor.r -= 1;
-}
-
-input.addEventListener("compositionstart", e => {
-  const el: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
-  el.style.opacity = "1";
-});
-input.addEventListener("compositionend", e => {
-  const el: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
-  el.style.opacity = "0";
-  insert(el.value, cursor);
-  el.value = "";
-  redraw(ctx, lines, cursor, offset, input);
-});
-input.addEventListener("input", (e: InputEvent) => {
-  const el: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
-  if (!e.isComposing) {
-    el.style.opacity = "0";
-    if (el.value === "\n") {
-      insertBr(cursor);
-    } else {
-      insert(el.value, cursor);
+        break;
+      case 38: // Up arrow
+        this.moveUp();
+        break;
+      case 39: // Right arrow
+        this.moveRight();
+        break;
+      case 40: // Down arrow
+        this.moveDown();
+        break;
+      default:
     }
 
-    el.value = "";
-    redraw(ctx, lines, cursor, offset, input);
+    if (!e.shiftKey) {
+      this.cursor.cancelSelection();
+    }
+    redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
   }
-});
+
+  backSpace() {
+    if (this.cursor.p.c === 0) {
+      this.joinLine(this.cursor);
+    } else {
+      this.removeCharBefore();
+      this.cursor.p.c -= 1;
+    }
+  }
+
+  removeCharBefore() {
+    this.lines[this.cursor.p.r] =
+      this.lines[this.cursor.p.r].slice(0, this.cursor.c - 1) +
+      this.lines[this.cursor.r].slice(this.cursor.c);
+  }
+
+  moveDown() {
+    this.cursor.r += 1;
+    if (this.cursor.r === this.lines.length) {
+      this.moveFileEnd();
+    }
+  }
+
+  moveRight() {
+    this.cursor.c += 1;
+    if (this.cursor.c > this.lines[this.cursor.r].length) {
+      this.moveNextLineStart();
+    }
+  }
+
+  moveUp() {
+    this.cursor.r -= 1;
+    if (this.cursor.r < 0) {
+      this.moveFileStart();
+    }
+  }
+
+  moveLeft() {
+    this.cursor.c -= 1;
+    if (this.cursor.c < 0) {
+      this.movePrevLineEnd();
+    }
+  }
+
+  insert(text: string, cursor: Cursor) {
+    const t = this.lines[cursor.r];
+    this.lines[cursor.r] = t.slice(0, cursor.c) + text + t.slice(cursor.c);
+    cursor.c += text.length;
+    cursor.cancelSelection();
+  }
+  insertBr(cursor: Cursor) {
+    const t = this.lines[cursor.r];
+    this.lines[cursor.r] = t.slice(0, cursor.c);
+    this.lines.splice(cursor.r + 1, 0, t.slice(cursor.c));
+    cursor.r += 1;
+    cursor.c = 0;
+    cursor.cancelSelection();
+  }
+  joinLine(cursor: Cursor) {
+    cursor.c = this.lines[cursor.r - 1].length;
+    this.lines[cursor.r - 1] = this.lines[cursor.r - 1] + this.lines[cursor.r];
+    this.lines.splice(cursor.r, 1);
+    cursor.r -= 1;
+  }
+}
