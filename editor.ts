@@ -72,6 +72,7 @@ export class Editor {
     });
     this.canvas.addEventListener("pointerup", e => {
       this.mousedown = false;
+      this.input.focus();
     });
 
     this.addEventTextarea();
