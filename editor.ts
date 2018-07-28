@@ -86,7 +86,7 @@ function removeCharBefore() {
 
 function moveDown() {
   cursor.r += 1;
-  if (cursor.r > lines.length) {
+  if (cursor.r === lines.length) {
     moveFileEnd();
   }
 }
