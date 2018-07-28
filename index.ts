@@ -1,5 +1,6 @@
 const canvas: HTMLCanvasElement = document.querySelector("#canv");
 import { Editor } from "./editor";
+import { example } from "./example";
 
-new Editor(canvas);
-// init(canvas);
+const ed = new Editor(canvas);
+ed.text = example;

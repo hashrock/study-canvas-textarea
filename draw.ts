@@ -18,7 +18,7 @@ export function redraw(
 ) {
   ctx.clearRect(0, 0, 400, 300);
 
-  const thisLine = lines[cursor.r];
+  const thisLine = lines[cursor.r] ? lines[cursor.r] : "";
   const m = thisLine.slice(0, cursor.c);
   const measure = ctx.measureText(m);
 

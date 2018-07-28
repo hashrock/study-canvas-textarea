@@ -1,4 +1,3 @@
-import { example } from "./example";
 import { Cursor } from "./cursor";
 import { redraw, setupTextDrawStyle } from "./draw";
 
@@ -7,7 +6,7 @@ export class Editor {
   cursor: Cursor;
   input: HTMLTextAreaElement;
   offset = 0;
-  lines = example.split("\n");
+  lines: string[] = [];
 
   constructor(canvas: HTMLCanvasElement) {
     const textarea = document.createElement("textarea");
@@ -49,6 +48,11 @@ export class Editor {
         redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
       }
     });
+  }
+
+  set text(v: string) {
+    this.lines = v.split("\n");
+    redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
   }
 
   moveFileStart() {
