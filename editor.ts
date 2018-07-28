@@ -84,13 +84,15 @@ export class Editor {
 
   getClickedPosition(x: number, y: number): Point {
     let r = Math.floor(y / lineHeight);
-    let c = 0;
+
+    //set max column at first
+    let c = this.lines[r].length;
     for (let i = 0; i < this.lines[r].length; i++) {
       const len = this.ctx.measureText(this.lines[r].slice(0, i));
       if (x < len.width) {
+        c = i - 1;
         break;
       }
-      c = i;
     }
     return {
       r: r,
