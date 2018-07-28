@@ -7,22 +7,9 @@ export class Editor {
   input: HTMLTextAreaElement;
   offset = 0;
   lines: string[] = [];
+  canvas: HTMLCanvasElement;
 
-  constructor(canvas: HTMLCanvasElement) {
-    const textarea = document.createElement("textarea");
-    textarea.setAttribute("id", "cursor");
-    textarea.setAttribute("autofocus", "autofocus");
-    canvas.parentElement.appendChild(textarea);
-    this.input = textarea;
-
-    this.ctx = (canvas as HTMLCanvasElement).getContext("2d");
-    setupTextDrawStyle(this.ctx);
-    this.cursor = new Cursor();
-    document.body.addEventListener("keydown", e => {
-      this.onKeyDown(e);
-    });
-    redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
-
+  addEventTextarea() {
     this.input.addEventListener("compositionstart", e => {
       const el: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
       el.style.opacity = "1";
@@ -48,6 +35,25 @@ export class Editor {
         redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
       }
     });
+  }
+
+  constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+    const textarea = document.createElement("textarea");
+    textarea.setAttribute("id", "cursor");
+    textarea.setAttribute("autofocus", "autofocus");
+    canvas.parentElement.appendChild(textarea);
+    this.input = textarea;
+
+    this.ctx = (canvas as HTMLCanvasElement).getContext("2d");
+    setupTextDrawStyle(this.ctx);
+    this.cursor = new Cursor();
+    document.body.addEventListener("keydown", e => {
+      this.onKeyDown(e);
+    });
+    redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
+
+    this.addEventTextarea();
   }
 
   set text(v: string) {
