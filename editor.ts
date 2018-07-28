@@ -1,5 +1,5 @@
-import { Cursor } from "./cursor";
-import { redraw, setupTextDrawStyle } from "./draw";
+import { Cursor, Point } from "./cursor";
+import { redraw, setupTextDrawStyle, fontsize, lineHeight } from "./draw";
 
 export class Editor {
   ctx: CanvasRenderingContext2D;
@@ -8,6 +8,7 @@ export class Editor {
   offset = 0;
   lines: string[] = [];
   canvas: HTMLCanvasElement;
+  mousedown: boolean;
 
   addEventTextarea() {
     this.input.addEventListener("compositionstart", e => {
@@ -53,12 +54,52 @@ export class Editor {
     });
     redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
 
+    this.canvas.addEventListener("pointerdown", e => {
+      const p = this.getClickedPosition(e.offsetX, e.offsetY);
+      this.cursor.p = p;
+      this.cursor.cancelSelection();
+      this.mousedown = true;
+
+      redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
+    });
+
+    this.canvas.addEventListener("pointermove", e => {
+      if (this.mousedown) {
+        const p = this.getClickedPosition(e.offsetX, e.offsetY);
+        this.cursor.p = p;
+        redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
+      }
+    });
+    this.canvas.addEventListener("pointerup", e => {
+      this.mousedown = false;
+    });
+
     this.addEventTextarea();
   }
 
   set text(v: string) {
     this.lines = v.split("\n");
     redraw(this.ctx, this.lines, this.cursor, this.offset, this.input);
+  }
+
+  getClickedPosition(x: number, y: number): Point {
+    let r = Math.floor(y / lineHeight);
+    let c = 0;
+    for (let i = 0; i < this.lines[r].length; i++) {
+      const len = this.ctx.measureText(this.lines[r].slice(0, i));
+      if (x < len.width) {
+        break;
+      }
+      c = i;
+    }
+    return {
+      r: r,
+      c: c
+    };
+  }
+
+  get thisLine() {
+    return this.lines[this.cursor.r];
   }
 
   moveFileStart() {
@@ -78,7 +119,7 @@ export class Editor {
 
   movePrevLineEnd() {
     this.cursor.r -= 1;
-    this.cursor.c = this.lines[this.cursor.r].length;
+    this.cursor.c = this.thisLine.length;
   }
 
   onKeyDown(e: KeyboardEvent) {

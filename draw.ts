@@ -1,6 +1,6 @@
 import { Cursor } from "./cursor";
-var fontsize = 13;
-var lineHeight = 13 * 1.5;
+export const fontsize = 13;
+export const lineHeight = 13 * 1.5;
 
 export function setupTextDrawStyle(ctx: CanvasRenderingContext2D) {
   ctx.font = '13px "Courier New", monospace';

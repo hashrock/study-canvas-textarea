@@ -1,4 +1,4 @@
-class Point {
+export class Point {
   c: number = 0;
   r: number = 0;
 }
