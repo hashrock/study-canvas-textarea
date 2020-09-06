@@ -4,7 +4,11 @@
   "main": "index.js",
   "author": "hashrock <hashedrock@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "build": "parcel build index.html"
+  },
   "devDependencies": {
+    "parcel": "^1.12.4",
     "typescript": "^2.9.2"
   },
   "dependencies": {
